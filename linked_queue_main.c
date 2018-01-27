@@ -1,5 +1,5 @@
 //
-// linked_stack_main.c
+// linked_queue_main.c
 //
 //  Created by Gina Ackerman on 1/21/18.
 //  Copyright © 2018 Gina Ackerman. All rights reserved.
@@ -11,7 +11,7 @@
 
 // forward declaration
 typedef struct slist_node slist_node;
-typedef struct stack stack;
+typedef struct queue queue;
 
 // Stack node and the node creation function
 struct slist_node {
@@ -19,7 +19,7 @@ struct slist_node {
    slist_node *next;
 };
 
-slist_node *create_stack_node(void *theData) {
+slist_node *create_queue_node(void *theData) {
    slist_node *nodePointer = (slist_node *) malloc(sizeof(slist_node));
    nodePointer->data = theData;
    nodePointer->next = NULL;
@@ -27,7 +27,7 @@ slist_node *create_stack_node(void *theData) {
 }
 
 // Stack and the correspoding operations
-struct stack {
+struct queue {
    slist_node *top;
    int numberOfItems;
 };
@@ -35,44 +35,44 @@ struct stack {
 /**************************************************
  * Function create_stack creates an empty stack.  *
  **************************************************/
-stack *create_stack() {
-   stack* theStack = (stack *)malloc(sizeof(stack));
-   theStack->numberOfItems = 0;
-   theStack->top = NULL;
+queue *create_queue() {
+   stack* thequeue = (queue *)malloc(sizeof(queue));
+   theQueue->numberOfItems = 0;
+   theQueue->top = NULL;
    
-   return theStack;
+   return theQueue;
 }
 
 /**********************************************
  * Function isEmpty returns true if the stack *
  * is empty, or false otherwise.              *
  **********************************************/
-bool is_empty(stack *theStack) {
-   return (theStack->numberOfItems == 0);
+bool is_empty(queue *theQueue) {
+   return (theQueue->numberOfItems == 0);
 };
 
 /*****************************************************
  * Function push pushes the argument onto the stack. *
  *****************************************************/
-void push(stack *theStack, void *theData) {
+void push(queue *theQueue, void *theData) {
    slist_node *theNode = create_stack_node(theData);
-   theNode->next = theStack->top;
-   theStack->top = theNode;
-   theStack->numberOfItems++;
+   theNode->next = theQueue->top;
+   theQueue->top = theNode;
+   theQueue->numberOfItems++;
 };
 
 /************************************************
  * Function pop removes the value at the top of *
  * of the stack.                                *
  ***********************************************/
-void pop(stack *theStack) {
-   if (is_empty(theStack)) {
-      fprintf(stderr, "stack is empty\n");
+void pop(queue *theQueue) {
+   if (is_empty(theQueue)) {
+      fprintf(stderr, "queue is empty\n");
    }
    else {
-      slist_node *theNode = theStack->top;
-      theStack->top = theNode->next;
-      theStack->numberOfItems--;
+      slist_node *theNode = theQueue->top;
+      theQueue->top = theNode->next;
+      theQueue->numberOfItems--;
       free(theNode);
    }
 }
@@ -80,13 +80,13 @@ void pop(stack *theStack) {
 /***************************************************
  * Function top returns the top node in the stack. *
  **************************************************/
-slist_node *top(stack *theStack) {
+slist_node *top(queue *theQueue) {
    slist_node *theNode = NULL;
-   if (is_empty(theStack)) {
-      fprintf(stderr, "stack is empty\n");
+   if (is_empty(theQueue)) {
+      fprintf(stderr, "queue is empty\n");
    }
    else {
-      theNode = theStack->top;
+      theNode = theQueue->top;
    }
    return theNode;
 }
@@ -94,8 +94,8 @@ slist_node *top(stack *theStack) {
 /*********************************************************
  * Function printAll prints the address of all elements. *
  ********************************************************/
-void printAll(stack *theStack) {
-   if (is_empty(theStack)) {
+void printAll(stack *theQueue) {
+   if (is_empty(theQueue)) {
       printf("stack is empty\n");
       return;
    }
