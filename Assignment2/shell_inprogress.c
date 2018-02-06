@@ -59,14 +59,18 @@ int main() {
                     perror("Could not fork the process");
                     break;
                 case 0: //child process
-                    status = execlp(args[0], args[0]);
+                    printf("Child running(%d): command = %s args = %s\n",child,commandBuffer,*args);
+                    status = execlp(commandBuffer,commandBuffer,*args,NULL);
                     if(status != 0)
                     {
                         perror ("error");
                         exit(-2);
                     }
                     break;
-                    
+                default:
+                    wait(NULL);
+                    printf("Child Done. PARENT(%d): value = %s\n",child,commandBuffer);
+                    break;
             //    default: //parent process
             }
         
@@ -129,22 +133,15 @@ void parse_command(char commandBuffer[], char *args[], long length) {
             case ' ': case '\t':
                 // TODO: Setup the pointer for the arguments
                 // insert your code here
-                if(start != -1){
-                    args[ct] = &commandBuffer[start];
-                    ct++;
-                }
+
+                start = ix;
                 commandBuffer[ix] = '\0';
-                start = -1;
                 break;
                 
             case '\n':
                 // TODO: Setup the pointer for the arguments
                 // insert your code here
-                if(start != -1)
-                {
-                    args[ct] = &commandBuffer[start];
-                    ct++;
-                }
+
                 commandBuffer[ix] = '\0';
                 args[ct] = NULL;
                 break;
@@ -152,9 +149,13 @@ void parse_command(char commandBuffer[], char *args[], long length) {
             default :     // some other character
                 // TODO: Set up the 'start' index
                 // insert your code here
-                if(start == -1)
-                    start = ix;
                 
+                if(start != -1)
+                {
+                    args[ct] = &commandBuffer[ix];
+                    printf("Args[%d]:%s\n",ct,args[ct]);
+                    ct++;
+                }
                 // Stop the process if the user enters a background task
                 if (commandBuffer[ix] == '&') {
                     perror("Background task is not supported\n");
@@ -164,4 +165,5 @@ void parse_command(char commandBuffer[], char *args[], long length) {
     }
     
     args[ct] = NULL; // just in case the command was > 80 characters
+    printf("Parsed. args: %s\n",*args);
 }
