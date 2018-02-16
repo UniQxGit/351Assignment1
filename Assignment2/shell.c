@@ -1,7 +1,8 @@
 //
 // Assignment 2 Modified Project 1 from
 // Operating System Concepts - Ninth Edition
-//
+// John Lee 893003137
+// 
 
 #include <stdio.h>
 #include <unistd.h>
