@@ -3,6 +3,7 @@
 // Operating System Concepts - Ninth Edition
 // John Lee 893003137
 // Chloe Ho 890712797
+// Long Nguyen 893548198
 
 #include <stdio.h>
 #include <unistd.h>
