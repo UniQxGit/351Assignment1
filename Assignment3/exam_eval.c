@@ -19,9 +19,15 @@ void respond_to_the_rating(int firstPipe[], int secondPipe[]);
 
 int main(int argc, const char * argv[]) {
    pid_t pid = fork();
+   int fd[2];
    // TODO: Create two pipes
    //       Terminate the program if fail to create the pipes
-   
+
+   if (pipe(fd) == -1) {
+      fprintf(stderr, "Pipe failed.\n");
+      return 1;
+   }
+
 
    // TODO: Create a child process
    //       Terminate the program if fail to fork a child process
@@ -30,10 +36,11 @@ int main(int argc, const char * argv[]) {
    //       child process invokes respond_to_the_rating
    if(pid == 0)
    {
-      //request_rating();  
+      request_rating(fd[READ_END],fd[WRITE_END]);  
    }else if(pid >0)
    {
-      //respond_to_the_rating();
+      wait(NULL);
+      respond_to_the_rating(fd[READ_END],fd[WRITE_END]);
    }else{
       perror("Could not fork the process");
       exit(-1);
@@ -80,6 +87,7 @@ void request_rating(int *first_pipe, int *second_pipe) {
        strcpy(write_msg, "hard");
    }
    printf("easy or hard: %s\n", write_msg);
+   
    
    // TODO: write the student's response to the first pipe
 
