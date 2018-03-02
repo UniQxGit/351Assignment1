@@ -136,7 +136,7 @@ void respond_to_the_rating(int *first_pipe, int *second_pipe) {
    printf("\tChild Read from pipe: %s \n", read_msg);
    close (first_pipe[READ_END]);
    
-   write(second_pipe[WRITE_END], "Hello", 
+   write(second_pipe[WRITE_END], read_msg, 
                strlen(read_msg)+1);
    printf("\tChild wrote...: %s \n", read_msg);
    close (second_pipe[WRITE_END]);
