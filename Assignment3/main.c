@@ -1,7 +1,10 @@
 //
 //  exam_eval.c
 //  Assignment3_OrdinaryPipes
-//  John Lee 893003137
+// John Lee 893003137
+// Chloe Ho 890712797
+// Long Nguyen 893548198
+
 
 #include <stdio.h>
 #include <unistd.h>
