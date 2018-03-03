@@ -1,7 +1,10 @@
 //
 //  exam_eval.c
 //  Assignment3_OrdinaryPipes
-//
+// John Lee 893003137
+// Chloe Ho 890712797
+// Long Nguyen 893548198
+
 
 #include <stdio.h>
 #include <unistd.h>
@@ -42,16 +45,16 @@ int main(int argc, const char * argv[]) {
     }else if(pid >0)
     {
         request_rating(fd1,fd2);
-        wait(NULL);
+        //wait(NULL);
         
         // close (fd1[READ_END]);
         // close (fd1[WRITE_END]);
         // close (fd2[WRITE_END]);
         
-//        char read_msg[BUFFER_SIZE];
-//        read(fd2[READ_END], read_msg,  BUFFER_SIZE);
-//        printf(">>Exam1 is %s\n",read_msg);
-//        close (fd2[READ_END]);
+        //        char read_msg[BUFFER_SIZE];
+        //        read(fd2[READ_END], read_msg,  BUFFER_SIZE);
+        //        printf(">>Exam1 is %s\n",read_msg);
+        //        close (fd2[READ_END]);
     }else{
         perror("Could not fork the process");
         exit(-1);
@@ -105,17 +108,17 @@ void request_rating(int *first_pipe, int *second_pipe) {
     
     close (first_pipe[READ_END]);
     close (second_pipe[WRITE_END]);
-    close (second_pipe[READ_END]);
+    // ghda - DO NOT close (second_pipe[READ_END]); yet
     // TODO: write the student's response to the first pipe
     write(first_pipe[WRITE_END], write_msg,
           strlen(write_msg)+1);
     printf("Parent Wrote: %s \n", write_msg);
     close (first_pipe[WRITE_END]);
     
-    // read(second_pipe[READ_END], read_msg,  BUFFER_SIZE);
-    // printf("Parent read: %s \n", write_msg);
-    
-    // // TODO: read the message from the second pipe
+    // TODO: read the message from the second pipe
+    read(second_pipe[READ_END], read_msg,  BUFFER_SIZE);
+    printf("Parent read: %s \n", read_msg); // ghda - corrected: read_msg
+    close(second_pipe[READ_END]);
 }
 
 /**********************************************************
@@ -125,25 +128,24 @@ void request_rating(int *first_pipe, int *second_pipe) {
  * first process.                                         *
  *********************************************************/
 void respond_to_the_rating(int *first_pipe, int *second_pipe) {
-    char write_msg[BUFFER_SIZE];
+    char write_msg[BUFFER_SIZE] = "Exam 1 is ";
     char read_msg[BUFFER_SIZE];
     
     close (second_pipe[READ_END]);
     close (first_pipe[WRITE_END]);
     
+    // TODO: read the student's response from the first pipe
     //printf("Child is responding...\n");
     read(first_pipe[READ_END], read_msg,  BUFFER_SIZE);
     printf("\tChild Read from pipe: %s \n", read_msg);
-    close (first_pipe[READ_END]);
-  
-       printf("\tChild wrote...: Exam 1 is  %s \n", read_msg);
-    write(second_pipe[WRITE_END], write_msg, strlen(write_msg)+1);
-            close(second_pipe[WRITE_END]);
-    close(second_pipe[READ_END]);
- 
-
-    
-    // TODO: read the student's response from the first pipe
     
     // TODO: write the new message to the second pipe
+    // ghda - apprends read_msg to write_msg
+    strcat(write_msg, read_msg);
+    printf("\tChild wrote...: %s \n", write_msg);
+    write(second_pipe[WRITE_END], write_msg, strlen(write_msg)+1);
+    
+    close (first_pipe[READ_END]);
+    close(second_pipe[WRITE_END]);
+    
 }
