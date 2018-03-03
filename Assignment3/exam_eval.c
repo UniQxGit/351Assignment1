@@ -105,7 +105,7 @@ void request_rating(int *first_pipe, int *second_pipe) {
 
    close (first_pipe[READ_END]);
    close (second_pipe[WRITE_END]);
-   close (second_pipe[READ_END]);
+   //close (second_pipe[READ_END]);
    // TODO: write the student's response to the first pipe
    write(first_pipe[WRITE_END], write_msg, 
                strlen(write_msg)+1);
