@@ -1,7 +1,7 @@
 //
 //  exam_eval.c
 //  Assignment3_OrdinaryPipes
-//
+//  John Lee 893003137
 
 #include <stdio.h>
 #include <unistd.h>
