@@ -80,6 +80,17 @@ void compute_lowest_highest(int numItems, float price[], float *highest, float *
     }
 }
 
+void compute_sum_average(int numItems, float price[], float *sum,
+                         float *average)
+{
+	int i;
+	*sum = 0.0;
+
+	for (i = 0; i < numItems; i++)
+		*sum = *sum + numbers[i];
+
+	*average = *sum / numItems;
+}
 
 /*******************************************************************
  * Calculate the total sale and the average, lowest and highest    *
