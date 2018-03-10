@@ -1,3 +1,4 @@
+
 //
 //  discounts.c
 //  Assignment4_SharedMemory
@@ -50,9 +51,6 @@ int main()
         default:
             wait(NULL);
             display_discounts();
-            for (int i = 0; i < SIZE; i++) {
-                printf("%4.2f%%\n", discounts[i]);
-            }
             break;
     }
     
@@ -94,7 +92,6 @@ void compute_discounts(float price[], float discount[]) {
      * Create the write shared memory segment.
      * Terminate the program if error.
      */
-   
     const char *name = "OS";
     const char *name1 = "discount";
     const char *name2 = "total";
@@ -129,22 +126,51 @@ void compute_discounts(float price[], float discount[]) {
      */
     
     float totalsale;
-    totalsale = 0.0;
-    int i;
+    float average;
     float highest_price;
     float lowest_price;
+    float tmpPrice[SIZE] = {};
     
-    
-    for(i = 0; i< SIZE; i++){
-        price[i] = price[i] * 1.0 - (discount[i] / 100.0);
-        totalsale += price[i];
+    printf("%s\t%s\t%s\t%s\t%s\n","DISCOUNT","TOTAL","AVERAGE","LOWEST","HIGHEST");
+    printf("%s\n","--------\t-----\t-------\t------\t-------");
+    for(int i = 0; i < SIZE; i++){
+        totalsale = 0.0;
+        average = 0.0;
+        for(int j = 0; j < SIZE; j++)
+        {
+            //printf("tmpPriceA:%f\n",tmpPrice[i]);
+            tmpPrice[j] = price[j] * (1.0 - (discount[i] / 100.0));
+            totalsale += tmpPrice[j];    
+            //printf("tmpPriceB:%f\n",tmpPrice[i]);
+        }
+        average = totalsale / SIZE;
+
+        compute_lowest_highest(SIZE, tmpPrice, &highest_price, &lowest_price);
+
+        //
+        sprintf(ptr,"%4.2f\t",discount[i]);
+        //ptr += strlen((char *)discount[i]);
+        sprintf(ptr,"%4.2f\t",totalsale);
+        sprintf(ptr,"%4.2f\t",average);
+        sprintf(ptr,"%4.2f\n",lowest_price);
+        sprintf(ptr,"%4.2f\t",highest_price);
+        
+
+        //Temporary. Move this into display_discounts
+        printf("%4.2f\t",discount[i]);
+        printf("%4.2f\t",totalsale);
+        printf("%4.2f\t",average);
+        printf("%4.2f\t",lowest_price);
+        printf("%4.2f\n",highest_price);
+        
     }
     
-    float average = 0;
-    average = totalsale / SIZE;
+    
+    
     //    printf("Total sale with 10 percent off =  %4.2f\n", totalsale);
     //    printf("Average sale with 10 percent off =  %4.2f\n", average);
-    compute_lowest_highest(SIZE, price, &highest_price, &lowest_price);
+    
+    
     //    printf("lowest = %4.2f\n" , lowest_price);
     //    printf("highest = %4.2f\n" , highest_price);
     
@@ -156,9 +182,8 @@ void compute_discounts(float price[], float discount[]) {
      * Note: must increment the value of ptr after each write.
      */
     
-
-    sprintf(ptr,"%s",name1);
-    ptr += strlen(name1);
+    //sprintf(ptr,"%s",name1);
+    //ptr += strlen(name1);
     sprintf(ptr,"\t%s",name2);
     ptr += strlen(name2);
     sprintf(ptr,"\t\t%s",name3);
@@ -200,7 +225,14 @@ void display_discounts(void) {
    
     
     /* now read from the shared memory region */
-    printf("%s",ptr);
+    printf("\n\n");
+    printf("%s\t%s\t%s\t%s\t%s\n","discount","TOTAL","AVERAGE","LOWEST","HIGHEST");
+    printf("%s\n","--------\t-----\t-------\t------\t-------");
+
+    for(int i = 0; i < SIZE; i++)
+    {
+        //Print out each location of shared memeory region.
+    }
     
     /* remove the shared memory segment */
     if (shm_unlink(name) == -1) {
