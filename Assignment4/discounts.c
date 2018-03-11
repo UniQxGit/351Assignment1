@@ -25,19 +25,6 @@ int main()
     float prices[SIZE] = {1000, 1500, 720, 850, 970};
     float discounts[SIZE] = {5, 10, 15, 20, 25};
     
-    /* TODO: Error check to make sure the child was successfully created */
-    
-    /*** TODO: If I am child, I will do this: ****/
-    /* Compute the total sale, the average, lowest and highest prices
-     * for the five items for each discount rate
-     */
-    
-    /*** TODO: If I am a parent, I will do the following ***/
-    /* Wait for my child process to compute and share the computed data, then
-     * display the data
-     */
-    
-    
     int pid = fork();
     switch(pid)
     {
@@ -87,11 +74,7 @@ void compute_lowest_highest(int numItems, float numbers[],
  * Establish the shared-memory object and share the computed data. *
  ******************************************************************/
 void compute_discounts(float price[], float discount[]) {
-    
-    /* TODO:
-     * Create the write shared memory segment.
-     * Terminate the program if error.
-     */
+
     const char *name = "OS";
     
     int shm_fd;
@@ -113,12 +96,6 @@ void compute_discounts(float price[], float discount[]) {
         printf("Map failed\n");
         // return -1;
     }
-    
-    /**
-     * TODO:
-     * Calculate the total sale, the average, lowest and highest prices for each
-     * item for each discount: 5%, 10%, 15%, 20%, 25%
-     */
     
     float totalsale;
     float average;
@@ -160,48 +137,18 @@ void compute_discounts(float price[], float discount[]) {
         ptr += strlen((char *)ptr)+1;
 
         sprintf(ptr,"$%.2f\n",highest_price);
-        printf("Length %d:%s\n",strlen((char *)ptr),(char *)ptr);
+        printf("Length %d:%s",strlen((char *)ptr),(char *)ptr);
         ptr += strlen((char *)ptr)+1;
         
 
         //Temporary. Move this into display_discounts
-        printf("%4.2f\t",discount[i]);
+        printf("FINAL: %4.2f\t",discount[i]);
         printf("%4.2f\t",totalsale);
         printf("%4.2f\t",average);
         printf("%4.2f\t",lowest_price);
         printf("%4.2f\n",highest_price);
         
     }
-    
-    
-    
-    //    printf("Total sale with 10 percent off =  %4.2f\n", totalsale);
-    //    printf("Average sale with 10 percent off =  %4.2f\n", average);
-    
-    
-    //    printf("lowest = %4.2f\n" , lowest_price);
-    //    printf("highest = %4.2f\n" , highest_price);
-    
-    
-    /**
-     * TODO: write the percentage discount, total sale, average price, lowest and
-     * highest prices to the shared memory region.
-     *
-     * Note: must increment the value of ptr after each write.
-     */
-    
-    //sprintf(ptr,"%s",name1);
-    //ptr += strlen(name1);
-    // sprintf(ptr,"\t%s",name2);
-    // ptr += strlen(name2);
-    // sprintf(ptr,"\t\t%s",name3);
-    // ptr += strlen(name3);
-    // sprintf(ptr,"\t\t%s",name4);
-    // ptr += strlen(name4);
-    // sprintf(ptr,"\t%s\n",name5);
-    // ptr += strlen(name5);
-    
-    
 }
 
 /*******************************************************************
@@ -244,7 +191,6 @@ void display_discounts(void) {
         {
             text = (char*)ptr;
             printf("%-9s",text);
-            //printf("\n%d:%s\n",strlen((char*)ptr),(char*)ptr);
             ptr += strlen(text)+1;
         }
     }
@@ -254,19 +200,4 @@ void display_discounts(void) {
         printf("Error removing %s\n",name);
         exit(-1);
     }
-    
-    /* TODO: open the read-only shared memory segment.
-     * Terminate the program if error.
-     */
-    
-    /* TODO: Map the shared memory segment in the address space of the process
-     *       Terminate if fail to map.
-     */
-    
-    /* TODO: Print header */
-    
-    /* TODO: read from the shared memory region */
-    
-    /* TODO: Remove the shared memory segment. Terminate the program if error.
-     */
 }
