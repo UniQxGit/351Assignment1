@@ -93,8 +93,8 @@ void compute_discounts(float price[], float discount[]) {
     /* now map the shared memory segment in the address space of the process */
     ptr = mmap(0,4096, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (ptr == MAP_FAILED) {
-        printf("Map failed\n");
-        // return -1;
+        perror("Could not fork the process");
+        exit(-1);
     }
     
     float totalsale;
@@ -103,17 +103,13 @@ void compute_discounts(float price[], float discount[]) {
     float lowest_price;
     float tmpPrice[SIZE] = {};
     
-    printf("%s\t%s\t%s\t%s\t%s\n","DISCOUNT","TOTAL","AVERAGE","LOWEST","HIGHEST");
-    printf("%s\n","--------\t-----\t-------\t------\t-------");
     for(int i = 0; i < SIZE; i++){
         totalsale = 0.0;
         average = 0.0;
         for(int j = 0; j < SIZE; j++)
         {
-            //printf("tmpPriceA:%f\n",tmpPrice[i]);
             tmpPrice[j] = price[j] * (1.0 - (discount[i] / 100.0));
             totalsale += tmpPrice[j];    
-            //printf("tmpPriceB:%f\n",tmpPrice[i]);
         }
         average = totalsale / SIZE;
 
@@ -121,33 +117,19 @@ void compute_discounts(float price[], float discount[]) {
 
         
         sprintf(ptr,"%4.f%%",discount[i],"");
-        printf("\nLength %d:%s\n",strlen((char *)ptr),(char *)ptr);
         ptr += strlen((char *)ptr)+1;
 
         sprintf(ptr,"$%.2f",totalsale);
-        printf("Length %d:%s\n",strlen((char *)ptr),(char *)ptr);
         ptr += strlen((char *)ptr)+1;
         
         sprintf(ptr,"$%.2f",average);
-        printf("Length %d:%s\n",strlen((char *)ptr),(char *)ptr);
         ptr += strlen((char *)ptr)+1;
         
         sprintf(ptr,"$%.2f",lowest_price);
-        printf("Length %d:%s\n",strlen((char *)ptr),(char *)ptr);
         ptr += strlen((char *)ptr)+1;
 
         sprintf(ptr,"$%.2f\n",highest_price);
-        printf("Length %d:%s",strlen((char *)ptr),(char *)ptr);
         ptr += strlen((char *)ptr)+1;
-        
-
-        //Temporary. Move this into display_discounts
-        printf("FINAL: %4.2f\t",discount[i]);
-        printf("%4.2f\t",totalsale);
-        printf("%4.2f\t",average);
-        printf("%4.2f\t",lowest_price);
-        printf("%4.2f\n",highest_price);
-        
     }
 }
 
@@ -195,6 +177,7 @@ void display_discounts(void) {
         }
     }
     
+    printf("\n\n");
     /* remove the shared memory segment */
     if (shm_unlink(name) == -1) {
         printf("Error removing %s\n",name);
