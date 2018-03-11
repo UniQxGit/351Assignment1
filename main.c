@@ -93,11 +93,6 @@ void compute_discounts(float price[], float discount[]) {
      * Terminate the program if error.
      */
     const char *name = "OS";
-    const char *name1 = "discount";
-    const char *name2 = "total";
-    const char *name3 = "average";
-    const char *name4 = "lowest";
-    const char *name5 = "highest";
     
     int shm_fd;
     void *ptr;
@@ -110,10 +105,10 @@ void compute_discounts(float price[], float discount[]) {
     }
     
     /* configure the size of the shared memory segment */
-    ftruncate(shm_fd,SIZE);
+    ftruncate(shm_fd,4096);
     
     /* now map the shared memory segment in the address space of the process */
-    ptr = mmap(0,SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    ptr = mmap(0,4096, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (ptr == MAP_FAILED) {
         printf("Map failed\n");
         // return -1;
@@ -147,13 +142,26 @@ void compute_discounts(float price[], float discount[]) {
 
         compute_lowest_highest(SIZE, tmpPrice, &highest_price, &lowest_price);
 
-        //
-        sprintf(ptr,"%4.2f\t",discount[i]);
-        //ptr += strlen((char *)discount[i]);
-        sprintf(ptr,"%4.2f\t",totalsale);
-        sprintf(ptr,"%4.2f\t",average);
-        sprintf(ptr,"%4.2f\n",lowest_price);
-        sprintf(ptr,"%4.2f\t",highest_price);
+        
+        sprintf(ptr,"%4.f%%",discount[i],"");
+        printf("\nLength %d:%s\n",strlen((char *)ptr),(char *)ptr);
+        ptr += strlen((char *)ptr)+1;
+
+        sprintf(ptr,"$%.2f",totalsale);
+        printf("Length %d:%s\n",strlen((char *)ptr),(char *)ptr);
+        ptr += strlen((char *)ptr)+1;
+        
+        sprintf(ptr,"$%.2f",average);
+        printf("Length %d:%s\n",strlen((char *)ptr),(char *)ptr);
+        ptr += strlen((char *)ptr)+1;
+        
+        sprintf(ptr,"$%.2f",lowest_price);
+        printf("Length %d:%s\n",strlen((char *)ptr),(char *)ptr);
+        ptr += strlen((char *)ptr)+1;
+
+        sprintf(ptr,"$%.2f\n",highest_price);
+        printf("Length %d:%s\n",strlen((char *)ptr),(char *)ptr);
+        ptr += strlen((char *)ptr)+1;
         
 
         //Temporary. Move this into display_discounts
@@ -184,14 +192,14 @@ void compute_discounts(float price[], float discount[]) {
     
     //sprintf(ptr,"%s",name1);
     //ptr += strlen(name1);
-    sprintf(ptr,"\t%s",name2);
-    ptr += strlen(name2);
-    sprintf(ptr,"\t\t%s",name3);
-    ptr += strlen(name3);
-    sprintf(ptr,"\t\t%s",name4);
-    ptr += strlen(name4);
-    sprintf(ptr,"\t%s\n",name5);
-    ptr += strlen(name5);
+    // sprintf(ptr,"\t%s",name2);
+    // ptr += strlen(name2);
+    // sprintf(ptr,"\t\t%s",name3);
+    // ptr += strlen(name3);
+    // sprintf(ptr,"\t\t%s",name4);
+    // ptr += strlen(name4);
+    // sprintf(ptr,"\t%s\n",name5);
+    // ptr += strlen(name5);
     
     
 }
@@ -217,7 +225,7 @@ void display_discounts(void) {
         exit(-1);
     }
     /* now map the shared memory segment in the address space of the process */
-    ptr = mmap(0,SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
+    ptr = mmap(0,4096, PROT_READ, MAP_SHARED, shm_fd, 0);
     if (ptr == MAP_FAILED) {
         printf("Map failed\n");
         exit(-1);
@@ -226,12 +234,19 @@ void display_discounts(void) {
     
     /* now read from the shared memory region */
     printf("\n\n");
-    printf("%s\t%s\t%s\t%s\t%s\n","discount","TOTAL","AVERAGE","LOWEST","HIGHEST");
-    printf("%s\n","--------\t-----\t-------\t------\t-------");
+    printf("%-8s %-8s %-8s %-8s %-8s\n","DISCOUNT","TOTAL","AVERAGE","LOWEST","HIGHEST");
+    printf("%-8s %-8s %-8s %-8s %-8s\n","--------","-----","-------","------","-------");
 
-    for(int i = 0; i < SIZE; i++)
+    char *text;
+    for (int i = 0; i < SIZE; i++)
     {
-        //Print out each location of shared memeory region.
+        for (int j = 0; j < SIZE; j++)
+        {
+            text = (char*)ptr;
+            printf("%-9s",text);
+            //printf("\n%d:%s\n",strlen((char*)ptr),(char*)ptr);
+            ptr += strlen(text)+1;
+        }
     }
     
     /* remove the shared memory segment */
