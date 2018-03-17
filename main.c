@@ -1,186 +1,155 @@
+/**
+ * Multithreaded Sorting Application
+ *
+ * Operating System Concepts - Ninth Edition
+ * John Wiley & Sons - 2013.
+ */
 
-//
-//  discounts.c
-//  Assignment4_SharedMemory
-//
-
-// TODO: Include additional header files
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <sys/shm.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#define SIZE 5
 
-// Function prototypes
-void compute_lowest_highest(int numItems, float numbers[],
-                            float *highest, float *lowest);
-void compute_discounts(float price[], float discount[]);
-void display_discounts(void);
+#define SIZE               10
+#define NUMBER_OF_THREADS  3
 
-int main()
+/* thread that performs basic sorting algorithm */
+void *sorter(void *params);
+/* thread that performs merging of results */
+void *merger(void *params);
+
+int list[SIZE] = {7,12,19,3,18,4,2,6,15,8};
+
+int result[SIZE];
+
+typedef struct
 {
+    int from_index;
+    int to_index;
+} parameters;
+
+int main (int argc, const char * argv[])
+{
+    int i;
     
-    float prices[SIZE] = {1000, 1500, 720, 850, 970};
-    float discounts[SIZE] = {5, 10, 15, 20, 25};
+    pthread_t workers[NUMBER_OF_THREADS];
+    //establish the first sorting thread
+    parameters *data = (parameters *) malloc (sizeof(parameters));
+    data->from_index = 0;
+    data->to_index = (SIZE/2) - 1;
+    pthread_create(&workers[0], 0, sorter, data);
     
-    int pid = fork();
-    switch(pid)
-    {
-        case -1:
-            perror("Could not fork the process");
-            exit(-1);
-            break;
-        case 0:
-            compute_discounts(prices,discounts);
-            break;
-        default:
-            wait(NULL);
-            display_discounts();
-            break;
+    //establish the second sorting thread
+    data = (parameters *) malloc (sizeof(parameters));
+    data->from_index = (SIZE/2);
+    data->to_index = SIZE - 1;
+    pthread_create(&workers[1], 0, sorter, data);
+    
+    //wait for the 2 sorting threads to finish
+    for (i = 0; i < NUMBER_OF_THREADS - 1; i++)
+        pthread_join(workers[i], NULL);
+    
+    //establish the merge thread
+    data = (parameters *) malloc(sizeof(parameters));
+    data->from_index = 0;
+    data->to_index = (SIZE/2);
+    pthread_create(&workers[2], 0, merger, data);
+    
+    //wait for the merge thread to finish
+    pthread_join(workers[2], NULL);
+    
+    /* output the sorted array */
+    for (i = 0; i < SIZE; i++) {
+        printf("%d  ",result[i]);
     }
+    printf("\n");
     
     return 0;
 }
 
-/*******************************************************************
- * Calculate the highest and lowest numbers in the given array.    *
- ******************************************************************/
-void compute_lowest_highest(int numItems, float numbers[],
-                            float *highest, float *lowest) {
-    int ix;
-    if (numItems < 0) {
-        printf("No scores to calculate highest and lowest\n");
-        *highest = 0;
-        *lowest = 0;
-        return;
-    }
-    *highest = numbers[0];
-    *lowest = numbers[0];
-    for (ix = 0; ix < numItems; ix++) {
-        if (numbers[ix] > *highest) {
-            *highest = numbers[ix];
-        }
-        else if (numbers[ix] < *lowest) {
-            *lowest = numbers[ix];
-        }
-    }
-}
+/**************************************************************
+ * Sorting thread                                             *
+ * This thread can essentially use any algorithm for sorting. *
+ *************************************************************/
+void *sorter(void *params)
+{
+    // Insert your sorting algorithm
+    // TODO: replace 'return NULL' with exit thread
 
-/*******************************************************************
- * Calculate the total sale and the average, lowest and highest    *
- * prices for each item.                                           *
- * Establish the shared-memory object and share the computed data. *
- ******************************************************************/
-void compute_discounts(float price[], float discount[]) {
-
-    const char *name = "OS";
+    parameters* p = (parameters *)params;
     
-    int shm_fd;
-    void *ptr;
+    //SORT
     
-    shm_fd = shm_open(name, O_CREAT | O_RDWR, 0666);
-    if (shm_fd == -1)
+    int begin = p->from_index;
+    int end = p->to_index+1;
+//    
+//    for(int i = begin; i < end; i++){
+//        printf("The array recieved is: %d\n", list[i]);
+//    }
+//    
+    printf("\n");
+    
+    int temp=0;
+    
+    for(int i=begin; i< end; i++)
     {
-        printf("shared memory failed\n");
-        exit(-1);
-    }
-    
-    /* configure the size of the shared memory segment */
-    ftruncate(shm_fd,4096);
-    
-    /* now map the shared memory segment in the address space of the process */
-    ptr = mmap(0,4096, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    if (ptr == MAP_FAILED) {
-        perror("Could not fork the process");
-        exit(-1);
-    }
-    
-    float totalsale;
-    float average;
-    float highest_price;
-    float lowest_price;
-    float tmpPrice[SIZE] = {};
-    
-    for(int i = 0; i < SIZE; i++){
-        totalsale = 0.0;
-        average = 0.0;
-        for(int j = 0; j < SIZE; j++)
+        for(int j=begin; j< end-1; j++)
         {
-            tmpPrice[j] = price[j] * (1.0 - (discount[i] / 100.0));
-            totalsale += tmpPrice[j];    
+            
+            if(list[j] > list[j+1])
+            {
+                temp = list[j];
+                list[j] = list[j+1];
+                list[j+1] = temp;
+                
+            }
         }
-        average = totalsale / SIZE;
-
-        compute_lowest_highest(SIZE, tmpPrice, &highest_price, &lowest_price);
-
-        
-        sprintf(ptr,"%4.f%%",discount[i],"");
-        ptr += strlen((char *)ptr)+1;
-
-        sprintf(ptr,"$%.2f",totalsale);
-        ptr += strlen((char *)ptr)+1;
-        
-        sprintf(ptr,"$%.2f",average);
-        ptr += strlen((char *)ptr)+1;
-        
-        sprintf(ptr,"$%.2f",lowest_price);
-        ptr += strlen((char *)ptr)+1;
-
-        sprintf(ptr,"$%.2f\n",highest_price);
-        ptr += strlen((char *)ptr)+1;
     }
-}
-
-/*******************************************************************
- * Output and display the computed total sale and the average,     *
- * lowest and highest prices for each item.                        *
- * Open the read-only shared-memory object and read data from the  *
- * shared memory region, then remove the shared memory segment.    *
- ******************************************************************/
-void display_discounts(void) {
     
-    const char *name = "OS";
+//    for(int k = begin; k< end; k++){
+//        printf("The sorted array: %d\n", list[k]);
+//    }
     
-    int shm_fd;
-    void *ptr;
-    int i;
-    
-    /* open the shared memory segment */
-    shm_fd = shm_open(name, O_RDONLY, 0666);
-    if (shm_fd == -1) {
-        printf("shared memory failed\n");
-        exit(-1);
-    }
-    /* now map the shared memory segment in the address space of the process */
-    ptr = mmap(0,4096, PROT_READ, MAP_SHARED, shm_fd, 0);
-    if (ptr == MAP_FAILED) {
-        printf("Map failed\n");
-        exit(-1);
-    }
-   
-    
-    /* now read from the shared memory region */
-    printf("\n\n");
-    printf("%-8s %-8s %-8s %-8s %-8s\n","DISCOUNT","TOTAL","AVERAGE","LOWEST","HIGHEST");
-    printf("%-8s %-8s %-8s %-8s %-8s\n","--------","-----","-------","------","-------");
-
-    char *text;
-    for (int i = 0; i < SIZE; i++)
+    for(int i=begin; i<end; i++)
     {
-        for (int j = 0; j < SIZE; j++)
+        result[i] = list[i];
+        printf("%d  ",result[i]);
+    }
+    printf("\n");
+    
+    pthread_exit(NULL);
+}
+
+/*************************************************************
+ * Merge thread                                              *
+ * Uses simple merge sort for merging two sublists.          *
+ ************************************************************/
+void *merger(void *params)
+{
+    // Insert your merging algorithm
+    // TODO: replace 'return NULL' with exit thread
+    parameters* p = (parameters *)params;
+    int begin = p->from_index;
+    int end = p->to_index+1;
+    
+    int temp;
+    for(int i=begin; i< end; i++)
+    {
+        for(int j=begin; j< end-1; j++)
         {
-            text = (char*)ptr;
-            printf("%-9s",text);
-            ptr += strlen(text)+1;
+            
+            if(result[j] > result[j+1])
+            {
+                temp= result[j];
+                result[j] = result[j+1];
+                result[j+1] = temp;
+                
+            }
         }
     }
-    
-    printf("\n\n");
-    /* remove the shared memory segment */
-    if (shm_unlink(name) == -1) {
-        printf("Error removing %s\n",name);
-        exit(-1);
+    printf("\n\nFINAL RESULT IS:\n");
+    for(int d=begin+1; d<end; d++)
+    {
+        printf("The final resulting array is: %d\n", result[d]);
     }
-}
+
+    pthread_exit(NULL);}
