@@ -3,6 +3,9 @@
  *
  * Operating System Concepts - Ninth Edition
  * John Wiley & Sons - 2013.
+ * John Lee 893003137
+ * Chloe Ho 890712797
+ * Long Nguyen 893548198
  */
 
 #include <pthread.h>
