@@ -31,37 +31,42 @@ int main (int argc, const char * argv[])
 {
     int i;
     
+    printf("\nORIGINAL: ");
+    for (i = 0; i < SIZE; i++) {
+        printf("%d  ",list[i]);
+    }
+    printf("\n");
+    
+
     pthread_t workers[NUMBER_OF_THREADS];
+    pthread_attr_t attr;
+    parameters data;
+    
+    /* get the default attributes */
+    pthread_attr_init(&attr);
+    
     //establish the first sorting thread
-    parameters *data = (parameters *) malloc (sizeof(parameters));
-    data->from_index = 0;
-    data->to_index = (SIZE/2) - 1;
-    pthread_create(&workers[0], 0, sorter, data);
+    pthread_create(&workers[0], &attr, sorter, &(parameters) { 0, (SIZE/2)-1});
     
     //establish the second sorting thread
-    data = (parameters *) malloc (sizeof(parameters));
-    data->from_index = (SIZE/2);
-    data->to_index = SIZE - 1;
-    pthread_create(&workers[1], 0, sorter, data);
+    pthread_create(&workers[1], &attr, sorter, &(parameters) { (SIZE/2), SIZE - 1});
     
     //wait for the 2 sorting threads to finish
     for (i = 0; i < NUMBER_OF_THREADS - 1; i++)
         pthread_join(workers[i], NULL);
     
     //establish the merge thread
-    data = (parameters *) malloc(sizeof(parameters));
-    data->from_index = 0;
-    data->to_index = (SIZE/2);
-    pthread_create(&workers[2], 0, merger, data);
+    pthread_create(&workers[2], &attr, merger, &(parameters) { 0, (SIZE-1)});
     
     //wait for the merge thread to finish
     pthread_join(workers[2], NULL);
     
     /* output the sorted array */
+    printf("\nSORTED: ");
     for (i = 0; i < SIZE; i++) {
         printf("%d  ",result[i]);
     }
-    printf("\n");
+    printf("\n\n");
     
     return 0;
 }
@@ -81,12 +86,6 @@ void *sorter(void *params)
     
     int begin = p->from_index;
     int end = p->to_index+1;
-//    
-//    for(int i = begin; i < end; i++){
-//        printf("The array recieved is: %d\n", list[i]);
-//    }
-//    
-    printf("\n");
     
     int temp=0;
     
@@ -105,16 +104,10 @@ void *sorter(void *params)
         }
     }
     
-//    for(int k = begin; k< end; k++){
-//        printf("The sorted array: %d\n", list[k]);
-//    }
-    
     for(int i=begin; i<end; i++)
     {
         result[i] = list[i];
-        printf("%d  ",result[i]);
     }
-    printf("\n");
     
     pthread_exit(NULL);
 }
@@ -136,7 +129,6 @@ void *merger(void *params)
     {
         for(int j=begin; j< end-1; j++)
         {
-            
             if(result[j] > result[j+1])
             {
                 temp= result[j];
@@ -146,10 +138,11 @@ void *merger(void *params)
             }
         }
     }
-    printf("\n\nFINAL RESULT IS:\n");
-    for(int d=begin+1; d<end; d++)
-    {
-        printf("The final resulting array is: %d\n", result[d]);
-    }
+
+    // printf("\n\nFINAL RESULT IS:\n");
+    // for(int d=begin+1; d<end; d++)
+    // {
+    //     printf("The final resulting array is: %d\n", result[d]);
+    // }
 
     pthread_exit(NULL);}
